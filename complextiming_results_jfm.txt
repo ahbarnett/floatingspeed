@@ -1,0 +1,23 @@
+Output on jfm's machine:
+
+Using CPP-type complex
+C/C++:
+100000000 C-type double mults in 0.154 s -- result = 25001938.522822525352
+100000000 C++ std vector double mults in 0.157 s -- result = 25001938.522822525352
+100000000 C-type doubles by hand (sep storage) mults in 0.32 s -- result = 1359.694269712279 + 50001298.550766341388I
+100000000 C-type doubles by hand complex mults in 0.311 s -- result = 1359.694269712279 + 50001298.550766341388I
+100000000 C++-type complex mults in 0.437 s -- result = 1359.694269712279 + 50001298.550766341388I
+Fortran:
+ 100000000 fortran real*8 mults in  0.160 s
+ 100000000 fortran complex*16 mults in  0.308 s
+
+Using C-type complex:
+C/C++:
+100000000 C-type double mults in 0.155 s -- result = 25001938.522822525352
+100000000 C++ std vector double mults in 0.156 s -- result = 25001938.522822525352
+100000000 C-type doubles by hand (sep storage) mults in 0.325 s -- result = 1359.694269712279 + 50001298.550766341388I
+100000000 C-type doubles by hand complex mults in 0.313 s -- result = 1359.694269712279 + 50001298.550766341388I
+100000000 C-type complex mults in 0.437 s -- result = 1359.694269712279 + 50001298.550766341388I
+Fortran:
+ 100000000 fortran real*8 mults in  0.156 s
+ 100000000 fortran complex*16 mults in  0.320 s

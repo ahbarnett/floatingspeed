@@ -1,0 +1,30 @@
+FLOATINGSPEED
+
+Real/complex arithmetic performance on arrays in C, C++, vs Fortran.
+One point is to compare C complex.h vs C++ complex vector arithmetic against
+Fortran native complex arithmetic.
+
+Alex Barnett and Jeremy Magland, 1/18/17
+
+See complextiming_results*.txt for results on various machines.
+
+Summary for i7 laptop: (GNU, -O3)
+
+Real: F & C same, C++ vector is twice as slow.
+Complex: F & hand-coded C are fastest and the same. C-type complex
+         and C++ vector are the same and 60-70% slower than this.
+
+Conclusions: one should avoid C++ std::vector for real, and avoid complex.h
+C types and C++ std::vector for complex. Either use Fortran or C coded with
+doubles doing complex multiplication my hand.
+
+Notes:
+
+* Enable one or the other of USE_C_TYPE_COMPLEX and USE_CPP_TYPE_COMPLEX (see below)
+* Each operation is now a multiplication and an addition. That way the result is accumulated (see next note)
+(I also created a new version of the fortran to use the same computation)
+* The result of the computation is printed out, so we are sure we are doing the same thing in each run.
+* Scope {} around each section
+* Fixed the random data once and for all at the top, so we can compare results.
+
+
