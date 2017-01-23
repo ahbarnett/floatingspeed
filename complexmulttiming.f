@@ -1,5 +1,8 @@
 c     gfortran complexmulttiming.f -o complexmulttimingf -O3
 c     ./complexmulttimingf
+c
+c     Note that 4*m doubles are needed for RAM, ie 32*m bytes.
+c     Barnett 1/18/17
       program complexmulttiming
       implicit none
       integer m,i

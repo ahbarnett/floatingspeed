@@ -14,12 +14,7 @@
 #include <vector>   // C++
 #include "utils.h"
 
-
 #define BIGINT long long
-
-double rand01() {
-    return (rand()%RAND_MAX)*1.0/RAND_MAX;
-}
 
 int main(int argc, char* argv[])
 /* C complex type version speed test for mult (plus add) two big 1D arrays.
@@ -27,6 +22,8 @@ int main(int argc, char* argv[])
  g++ complexmulttiming.cpp utils.o -o complexmulttiming -O3
  ./complexmulttiming
 
+ If you change the array size M, be aware that 8*M doubles of RAM are needed,
+ ie 64*M bytes.
 */
 {
   BIGINT M=1e8;

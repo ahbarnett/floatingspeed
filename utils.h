@@ -13,4 +13,7 @@ class CNTime {
   struct timeval initial;
 };
 
+// crappy random doubles in [0,1)
+#define rand01() (((double)rand())/RAND_MAX)
+
 #endif
