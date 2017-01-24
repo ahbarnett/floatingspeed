@@ -5,14 +5,15 @@
 # clean
 rm -f *.o complexmulttimingf complexmulttiming
 
+export FLAGS="-O3 -funroll-loops -march=native"
 # compile and run
-gfortran complexmulttiming.f -o complexmulttimingf -O3 -funroll-loops
+gfortran complexmulttiming.f -o complexmulttimingf $FLAGS
 echo Fortran:
 ./complexmulttimingf
 g++ utils.cpp -c
-g++ complexmulttiming.cpp utils.o -o complexmulttiming -O3 -funroll-loops -D USE_C_TYPE_COMPLEX
+g++ complexmulttiming.cpp utils.o -o complexmulttiming $FLAGS -D USE_C_TYPE_COMPLEX
 echo C and C-type:
 ./complexmulttiming
-g++ complexmulttiming.cpp utils.o -o complexmulttiming -O3 -funroll-loops -D USE_CPP_TYPE_COMPLEX
+g++ complexmulttiming.cpp utils.o -o complexmulttiming $FLAGS -D USE_CPP_TYPE_COMPLEX
 echo C++ type:
 ./complexmulttiming
