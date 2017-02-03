@@ -4,27 +4,52 @@ Real/complex arithmetic performance on arrays in C, C++, vs Fortran.
 One point is to compare C complex.h vs C++ complex vector arithmetic against
 Fortran native complex arithmetic.
 
-Alex Barnett and Jeremy Magland, 1/18/17
+Alex Barnett, Jeremy Magland, with advice from Andras Pataki.
 
-See complextiming_results*.txt for results on various machines.
+Version of 2/3/17
 
-Summary for i7 laptop: (GNU, -O3)
+To compile and perform all tests on linux system, run: 
+
+   ./do_complextimings.sh
+
+See results/complextiming_results*.txt for results on various machines.
+
+
+Summary for i7 laptop: (GNU, -Ofast)
+
+Fortran, C and C++ are all equally fast for complex arithmetic using their
+native types (complex.h for C, and <complex> for C++). std::vector doesn't
+add any overhead.
+Doing it by hand with RRR..III... storage is silly anyway and adds 10%
+overhead. By hand with RIRIRI... storage is no faster than complex types
+in either C or C++.
+
+This is since -Ofast enables -ffast-math, which removes the function call
+and conditionals about Infs, Nans, etc, compiled into the assembly code
+to make strict IEEE-compliant complex arithmetic.
+
+Choose whatever language you like, but you must use -Ofast to match Fortran
+speed.
+For these simple loops, -funroll-loops and -march=native offer no advantages.
+
+
+Old summary for i7 laptop: (GNU, -O3, ie strict IEEE compliant, not fast-math)
 
 Real: F & C same, C++ vector is twice as slow.
 Complex: F & hand-coded C are fastest and the same. C-type complex
          and C++ vector are the same and 60-70% slower than this.
 
-Conclusions: one should avoid C++ std::vector for real, and avoid complex.h
+Conclusions: strict IEEE compliance is a huge speed hit in C and C++.
+If you need it, one should avoid C++ std::vector for real, and avoid complex.h
 C types and C++ std::vector for complex. Either use Fortran or C coded with
 doubles doing complex multiplication my hand.
 
+
 Notes:
 
-* Enable one or the other of USE_C_TYPE_COMPLEX and USE_CPP_TYPE_COMPLEX (see below)
+* Enable either USE_C_TYPE_COMPLEX or USE_CPP_TYPE_COMPLEX in the C++ code.
 * Each operation is now a multiplication and an addition. That way the result is accumulated (see next note)
 (I also created a new version of the fortran to use the same computation)
 * The result of the computation is printed out, so we are sure we are doing the same thing in each run.
 * Scope {} around each section
 * Fixed the random data once and for all at the top, so we can compare results.
-
-
