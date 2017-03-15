@@ -16,11 +16,13 @@
 
 #define BIGINT long long
 
+//#define double float   // use to test single-prec speed (only 15% faster).
+
+
 int main(int argc, char* argv[])
 /* C complex type version speed test for mult (plus add) two big 1D arrays.
 
- g++ complexmulttiming.cpp utils.o -o complexmulttiming -O3
- ./complexmulttiming
+ See do_complextimings.sh for compilation.
 
  If you change the array size M, be aware that 8*M doubles of RAM are needed,
  ie 64*M bytes.

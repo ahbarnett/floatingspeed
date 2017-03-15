@@ -9,6 +9,10 @@ c     Barnett 1/18/17
       real *8, allocatable :: x(:),x2(:)
       complex*16, allocatable :: z(:),z2(:)
       complex*16 ima
+c     or single-prec tests...  (<5% difference in speed)
+c      real *4, allocatable :: x(:),x2(:)
+c      complex*8, allocatable :: z(:),z2(:)
+c      complex*8 ima
       real :: t0,t1
       data ima/(0.0d0,1.0d0)/
       m=1e8
