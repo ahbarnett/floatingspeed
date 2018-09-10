@@ -112,8 +112,8 @@ int main(int argc, char* argv[])
   ///////////////////////////////////////////////////////////////////////////////////////
   // C-type complex
   {
-    complex double *z = (complex double *)malloc(sizeof(complex double)*M);
-    complex double *z2 = (complex double *)malloc(sizeof(complex double)*M);
+    double complex *z = (double complex *)malloc(sizeof(double complex)*M);
+    double complex *z2 = (double complex *)malloc(sizeof(double complex)*M);
     for(BIGINT i=0;i<M;++i) {
       z[i] = data1_re[i] + I*data1_im[i];
       z2[i] = data2_re[i] + I*data2_im[i];
