@@ -1,0 +1,17 @@
+Fortran:
+ 100000000 fortran real*8 mults in  0.146 s
+ 100000000 fortran complex*16 mults in  0.301 s
+C and C-type:
+100000000 C-type double mults in 0.145 s
+	result = 25001938.522822521627
+100000000 C++ std vector double mults in 0.303 s
+	result = 25001938.522822521627
+100000000 complex as doubles by hand (sep storage) mults in 0.298 s
+	result = 1359.694269712231 + 50001298.550766341388I
+100000000 complex as doubles by hand mults in 0.294 s
+	result = 1359.694269712231 + 50001298.550766341388I
+100000000 C-type complex mults in 0.291 s
+	result = 1359.694269712231 + 50001298.550766341388I
+C++ type:
+100000000 C++-type complex mults in 0.45 s
+	result = 1359.694269712231 + 50001298.550766341388I
