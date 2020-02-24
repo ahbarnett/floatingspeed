@@ -17,16 +17,19 @@ rm -f *.o complexmulttimingf complexmulttimingc complexmulttimingcpp
 #export FLAGS="-Ofast -funroll-loops -march=native"
 
 # beats perf of Ofast, and allows correct Nan-checking, we hope:
+# This -fcx-limited-range is *crucial* for optimal C++ complex speed!
 #export FLAGS="-O3 -funroll-loops -march=native -fcx-limited-range"
+
 export FLAGS="-O3 -march=native -fcx-limited-range"
+
 # see discussion at: https://medium.com/@smcallis_71148/complex-arithmetic-is-complicated-873ec0c69fc5
 
 #export FLAGS="-Ofast -funroll-loops -march=native"
 
 # compile and run
 
-GF=gfortran
-#GF=gfortran-7
+#GF=gfortran
+GF=gfortran-7
 
 $GF complexmulttiming.f -o complexmulttimingf $FLAGS
 echo Fortran:
@@ -35,10 +38,10 @@ echo Fortran:
 # needed for complex.h if modern g++ version:
 FLAGS+=" -std=c++03"
 
-GXX=g++
-#GXX=g++-7
+#GXX=g++
+GXX=g++-7
 
-g++-7 utils.cpp -c
+$GXX utils.cpp -c
 $GXX complexmulttiming.cpp utils.o -o complexmulttimingc $FLAGS -D USE_C_TYPE_COMPLEX
 echo C++-type real and C-type complex:
 ./complexmulttimingc

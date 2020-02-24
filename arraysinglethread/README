@@ -1,4 +1,4 @@
-FLOATINGSPEED
+ARRAYSINGLETHREAD
 
 Compare single-core real and complex arithmetic performance on arrays
 in C, C++, and Fortran.  The task is mostly memory-bounds (a couple of
@@ -8,14 +8,16 @@ complex arithmetic.
 
 Alex Barnett, Jeremy Magland, with advice from Andras Pataki.
 
-Version of 3/28/17
+Initial version 3/28/17
+Rename 2/21/20
 
 To compile and perform all tests on linux system with GCC, run: 
 
    ./do_complextimings.sh
 
-See results/complextiming_results*.txt for results with various flags
-on various machines.
+There is no makefile. Adjust FC and GXX in the above script to change
+compiler and flags. See results/complextiming_results*.txt for results
+with various flags on various machines.
 
 Summary:
 

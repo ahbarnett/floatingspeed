@@ -2,7 +2,7 @@ c     gfortran complexmulttiming.f -o complexmulttimingf -O3
 c     ./complexmulttimingf
 c
 c     Note that 4*m doubles are needed for RAM, ie 32*m bytes.
-c     Barnett 1/18/17
+c     Barnett 1/18/17, updated write * format 2/21/20
       program complexmulttiming
       implicit none
       integer m,i
@@ -29,7 +29,7 @@ c     real
          x(i) = x(i-1) + x(i) * x2(i)
       enddo
       call cpu_time(t1)
-      write (*,'(I10," fortran real*8 mults in ",f6.3," s")'), m, t1-t0
+      write (*,'(I10," fortran real*8 mults in ",f6.3," s")') m, t1-t0
       deallocate(x)
       deallocate(x2)
 
@@ -45,7 +45,7 @@ c     complex
          z(i) = z(i-1) + z(i) * z2(i)
       enddo
       call cpu_time(t1)
-      write (*,'(I10," fortran complex*16 mults in ",f6.3," s")'), m,
+      write (*,'(I10," fortran complex*16 mults in ",f6.3," s")') m,
      c     t1-t0
 
       end program
