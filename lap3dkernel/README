@@ -1,0 +1,12 @@
+lap3dkernel.
+
+Currently this is just one directory for each language implementation,
+for summing 1/r from 1e4 sources to 1e4 targets, for double precision reals.
+
+Alex Barnett, Feb 2020.
+
+Results table:
+
+* fortran: 80 ms = 1.3 Gpair/sec
+* julia w/ @threads @simd and writing out C-like code: 80 ms = 1.3 Gpair/sec
+
