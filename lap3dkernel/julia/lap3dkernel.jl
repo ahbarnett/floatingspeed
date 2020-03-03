@@ -4,10 +4,17 @@
 #= comment block
 =#
 
+# How to run:
+# mutlithreading: must start julia with
+# JULIA_NUM_THREADS=8 julia
+
+# then, to run:  include("lap3dkernel.jl")
+
 using LinearAlgebra
 using Printf
 using BenchmarkTools
 using Base.Threads
+# this is useless, apparently:
 #using Devectorize
 
 function eye(n)
@@ -26,7 +33,7 @@ function lap3dcharge(y,q,x)       # vec over targs
     return pot
 end
 
-function lap3dcharge_devec(y,q,x)       # unwrap i,j
+function lap3dcharge_devec(y,q,x)       # unwrap i,j.   C-style coding, SIMD
     nt = size(x,2)
     ns = size(y,2)
     pot = zeros(1,nt)    # note zeros(nt), col vec, fails to add r later
@@ -42,7 +49,7 @@ function lap3dcharge_devec(y,q,x)       # unwrap i,j
     return pot
 end
 
-function lap3dcharge_devec_par(y,q,x)
+function lap3dcharge_devec_par(y,q,x)   # multi-threaded version of above
     nt = size(x,2)
     pot = zeros(nt)    # note zeros(nt), col vec, fails to add r later
     prefac = 1/(4*pi)
@@ -65,24 +72,20 @@ t = @elapsed lap3dcharge(y,q,x)    # discards return value
 t = @elapsed lap3dcharge(y,q,x)    # discards return value - is already compiled
 #pot, t = @timed lap3dcharge(y,q,x)      # gets the time in secs
 @printf("targ-vec: %d src-targ pairs in %.3g s: %.3g Gpair/s\n",ns*nt,t,ns*nt/t/1e9)
-# 0.016 Gpair/s, ie 20x slower than devec
+# 0.06 Gpair/s, ie 5x slower than devec
 
 lap3dcharge_devec(y,q,x)   # compile it?
 t = @elapsed lap3dcharge_devec(y,q,x)    # discards return value
 t = @elapsed lap3dcharge_devec(y,q,x)    # discards return value
 @printf("devec: %d src-targ pairs in %.3g s: %.3g Gpair/s\n",ns*nt,t,ns*nt/t/1e9)
-# is best - 0.3 Gpair/s   (numba was 1.0)
+# best, single-threaded,  0.33 Gpair/s   (py+numba was 1.3 since multithreaded)
 
 t = @elapsed lap3dcharge_devec_par(y,q,x)    # discards return value
 t = @elapsed lap3dcharge_devec_par(y,q,x)    # discards return value
 @printf("devec par: %d src-targ pairs in %.3g s: %.3g Gpair/s\n",ns*nt,t,ns*nt/t/1e9)
-# 6x slower
+# 1.26 Gpair/s, matches py+numba
 
-# S. Johnson: use benchmark tools.
-#@btime lap3dcharge_devec_par($y,$q,$x);
+# S. Johnson chat: use benchmark tools.
+# @btime lap3dcharge_devec_par($y,$q,$x);
 # the $ is a btime thing: means figure out the type of args before benchmarking
 # ; suppresses output - but actually doesn't.
-
-# mutlithreading: start with
-#JULIA_NUM_THREADS=8 julia 
-# to run:  include("lap3dkernel.jl")

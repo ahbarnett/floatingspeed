@@ -1,12 +1,25 @@
 lap3dkernel.
 
-Currently this is just one directory for each language implementation,
-for summing 1/r from 1e4 sources to 1e4 targets, for double precision reals.
+Dense direct N-body performance tests.  Currently this has one
+directory for each language implementation, with code for summing 1/r
+from 1e4 sources to 1e4 targets, for double precision reals.  This is
+my own version of David Stein's similar performance comparison on the
+same task.
 
-Alex Barnett, Feb 2020.
+Alex Barnett, Mar 2020
 
-Results table:
 
-* fortran: 80 ms = 1.3 Gpair/sec
+To run all tests in linux (assumes you have all packages and compilers):
+
+  ./run_all_tests.sh
+
+
+Results for i7-7700HQ (2017 laptop, 2.8GHz, 3.8GHz turbo, 4-core, 8-threads):
+
+* fortran (GCC 7) + omp: 80 ms = 1.3 Gpair/sec
 * julia w/ @threads @simd and writing out C-like code: 80 ms = 1.3 Gpair/sec
-
+   native julia: 0.06 Gpair/sec
+* python (Intel) w/ numba: 1.3 Gpair/sec, after jit compilation time of 3 sec.
+   native py: 0.05 Gpair/sec
+* MATLAB: 0.11 Gpair/sec, uses all 8 threads
+* octave (w/ same code as MATLAB): 0.06 Gpair/sec, uses 1 thread
