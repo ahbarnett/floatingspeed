@@ -1,5 +1,6 @@
 ! test speed of Laplace 3D kernel eval in Fortran 90.
 ! Barnett 9/26/18 - 10/1/18
+! ntest>1 added 3/4/20
 
 ! Issues: why is run time so variable, compared to other language versions??
 
@@ -39,9 +40,10 @@ program lap3dpottest
   use omp_lib
   
   implicit none
-  integer :: ns=10000, nt=10000
+  integer :: ns=10000, nt=10000, ntest=20, i
   real*8, allocatable :: x(:,:), y(:,:), q(:), pot(:)
   real :: t0,t1,t
+  real*8 :: tot
 
   print *,'ns=',ns,'   nt=',nt
   
@@ -56,20 +58,36 @@ program lap3dpottest
   
   !call cpu_time(t0)             ! use if no openmp
   !print *,'timer tick : ',omp_get_wtick()    ! 1 ns resolution
+  print *,'ntest = ',ntest,' ...'
   t0 =omp_get_wtime()
-  call lap3dpot(pot,y,q,x,ns,nt)
+  do i=1,ntest
+     call lap3dpot(pot,y,q,x,ns,nt)
+  end do
   !call cpu_time(t1)
-  !  t =t1-t0       ! run time
   t = omp_get_wtime()-t0
-  print *,ns*nt,'src-targ pairs in',t,'s:',ns*nt/t/1.E9,'Gpair/s'
+  tot = 0.D0
+  do i=1,nt
+     tot = tot + pot(i)
+  end do
+  print *,'tot=',tot
+  print *,ns*nt,'src-targ pairs in',t,'s:',ntest*ns*nt/t/1.E9,'Gpair/s'
 
   ! Amazingly, gfortran -Wall doesn't complain if we fail to flip the arrays
   ! but call a routine expecting flipped arrays! ... shameful ...
-
-  t0 =omp_get_wtime()
-  call lap3dpot_tr(pot,y,q,x,ns,nt)
-  t = omp_get_wtime()-t0
-  print *,'tr:',ns*nt,'src-targ pairs in',t,'s:',ns*nt/t/1.E9,'Gpair/s'
+  
+  if (0.eq.1) then
+     t0 =omp_get_wtime()
+     do i=1,ntest
+        call lap3dpot_tr(pot,y,q,x,ns,nt)
+     end do
+     t = omp_get_wtime()-t0
+     tot = 0.D0
+     do i=1,nt
+        tot = tot + pot(i)
+     end do
+     print *,'tot=',tot
+     print *,'tr:',ns*nt,'src-targ pairs in',t,'s:',ntest*ns*nt/t/1.E9,'Gpair/s'
+  endif
 
   deallocate(x)
   deallocate(y)

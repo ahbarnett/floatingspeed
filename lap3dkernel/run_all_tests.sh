@@ -3,11 +3,11 @@
 
 echo C++SIMD:
 # assumes g++-7 is compiler;  if use module load gcc/7.4.0, change to plain g++
-(cd c++SIMD; g++-7 -fPIC -g -O3 -march=native -funroll-loops -fopenmp -std=c++17 -DVCL -I./VCL_AgnerFog_version1 -fopenmp lap3dkernel.cpp; ./a.out)
+(cd c++SIMD; g++ -fPIC -g -O3 -march=native -funroll-loops -fopenmp -std=c++17 -DVCL -I./VCL_AgnerFog_version1 -fopenmp lap3dkernel.cpp; ./a.out)
 
 echo FORTRAN:
 # assumes gfortran-7 is your compiler; see above
-(cd fortran; gfortran-7 lap3dpottest.f90 -O3 -fopenmp -funroll-loops -march=native; ./a.out)
+(cd fortran; gfortran lap3dpottest.f90 -O3 -fopenmp -funroll-loops -march=native; ./a.out)
 
 echo JULIA:
 # note you'll need to import some Pkgs into your julia distro
