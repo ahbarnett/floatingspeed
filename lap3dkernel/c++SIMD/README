@@ -1,0 +1,13 @@
+This is edited from Libin Lu's SIMD demos of Dec 2019, here:
+https://github.com/lu1and10/ccm_simd_demo
+See that repo for more information about SIMD.
+
+It was changed from 1D to 3D, and from exp kernel to plain 1/r.
+Timing outputs were improved.
+
+The directory VCL_AgnerFog_version1 is the vectorclass library from here:
+https://github.com/vectorclass
+
+To compile, see the cpp file.
+
+Alex Barnett 3/4/20
