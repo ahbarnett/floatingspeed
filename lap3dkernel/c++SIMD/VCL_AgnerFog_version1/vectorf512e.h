@@ -1346,6 +1346,10 @@ static inline Vec8d sqrt(Vec8d const & a) {
     return Vec8d(sqrt(a.get_low()), sqrt(a.get_high()));
 }
 
+static inline Vec8d approx_rsqrt(Vec8d const & a) {
+    return Vec8d(approx_rsqrt(a.get_low()), approx_rsqrt(a.get_high()));
+}
+
 // function square: a * a
 static inline Vec8d square(Vec8d const & a) {
     return a * a;

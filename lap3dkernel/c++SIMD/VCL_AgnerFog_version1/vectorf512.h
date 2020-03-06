@@ -1379,6 +1379,10 @@ static inline Vec8d sqrt(Vec8d const & a) {
     return _mm512_sqrt_pd(a);
 }
 
+static inline Vec8d approx_rsqrt(Vec8d const & a) {
+    return _mm512_cvtps_pd(_mm256_rsqrt_ps(_mm512_cvtpd_ps(a)));
+}
+
 // function square: a * a
 static inline Vec8d square(Vec8d const & a) {
     return a * a;
