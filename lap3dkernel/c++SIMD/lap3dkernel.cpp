@@ -10,7 +10,8 @@
 // Alex Barnett 3/4/20
 
 // Compile & run:
-// g++-9 -fPIC -g -O3 -march=native -funroll-loops -fopenmp -std=c++17 -DVCL -I./version1 -fopenmp main.cc; ./a.out
+
+// g++-7 -fPIC -g -O3 -march=native -funroll-loops -fopenmp -std=c++17 -DVCL -I./VCL_AgnerFog_version1 -fopenmp lap3dkernel.cpp; ./a.out
 
 // Libin's compilation commands:
 // icpc -fPIC -g -O3 -march=native -funroll-loops -fopenmp -std=c++17 -DVCL -I./version1 main.cc; ./a.out
