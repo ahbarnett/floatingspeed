@@ -35,3 +35,24 @@ Notes: Clearly C++ w/ VCL beats others by 2x, and nearly 4x w/ custom rsqrt.
 It would be interesting to try the single-precision test, and xeon.
 
 I note g++-7 single core is 0.17, but g++9 single core is 0.34.
+
+
+Intel Xeon Gold 6128 CPU (2019 workstation, 3.4GHz, avx512, 12-core, 24-threads):
+
+* C++ (GCC 9) + omp:                               4.1  Gpair/sec
+      manual SIMD VCL vectorclass library + omp    6.1  Gpair/sec
+      manual SIMD VCL custom double rsqrt + omp    18.3 Gpair/sec      
+* C++ (icpc 2019) + omp:                           4.1  Gpair/sec
+      manual SIMD VCL vectorclass library + omp    4.0  Gpair/sec
+      manual SIMD VCL custom double rsqrt + omp    12.8 Gpair/sec      
+* fortran (GCC 9) + omp:                           4.0  Gpair/sec
+* fortran (ifort 2019) + omp:                      7.7  Gpair/sec
+* python (Intel) w/ numba:                         2.5  Gpair/sec
+   native py:                                      0.05 Gpair/sec     
+* MATLAB (R2019a):                                 0.1  Gpair/sec
+
+Notes: The above results were run with 12 OMP threads, the performance with 24 threads
+was worse
+
+
+
