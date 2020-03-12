@@ -37,13 +37,14 @@
 
 program lap3dpottest
 
-  use omp_lib
+  !use omp_lib
   
   implicit none
   integer :: ns=10000, nt=10000, ntest=20, i
   real*8, allocatable :: x(:,:), y(:,:), q(:), pot(:)
-  real :: t0,t1,t
-  real*8 :: tot
+  real*8 :: t0,t1
+  real :: t
+  real*8 :: tot,omp_get_wtime
 
   print *,'ns=',ns,'   nt=',nt
   
@@ -64,7 +65,8 @@ program lap3dpottest
      call lap3dpot(pot,y,q,x,ns,nt)
   end do
   !call cpu_time(t1)
-  t = omp_get_wtime()-t0
+  t1 = omp_get_wtime()
+  t = t1-t0
   tot = 0.D0
   do i=1,nt
      tot = tot + pot(i)

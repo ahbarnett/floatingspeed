@@ -9,6 +9,15 @@ echo FORTRAN:
 # assumes gfortran is your compiler; see above
 (cd fortran; gfortran lap3dpottest.f90 -O3 -fopenmp -funroll-loops -march=native; ./a.out)
 
+
+# uncomment following five lines to test intel c++ compiler and intel fortran compiler
+#echo IC++SIMD:
+#(cd c++SIMD; icpc -fPIC -O3 -march=native -funroll-loops -mkl -qopenmp -std=c++17 -DVCL -I./VCL_AgnerFog_version1+rsqrt -qopenmp lap3dkernel.cpp; ./a.out)
+#
+#echo IFORT:
+#(cd fortran; ifort lap3dpottest.f90 -qopenmp -fPIC -O3 -march=native -funroll-loops -mkl; ./a.out)
+
+
 echo JULIA:
 # note you'll need to import some Pkgs into your julia distro
 JULIA_NUM_THREADS=$(nproc) julia julia/lap3dkernel.jl
