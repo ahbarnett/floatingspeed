@@ -18,23 +18,25 @@
 // g++ -fPIC -g -O3 -march=native -funroll-loops -fopenmp -std=c++17 -DVCL -I./version1 main.cc; ./a.out
 // /cm/shared/sw/pkg/vendor/intel-pstudio/2019-3/vtune_amplifier/bin64/amplxe-cl -collect hotspots ./a.out
 
-#include <math.h> 
-#include <vector>
-#include <iostream>
-#include <iomanip>
 #include <omp.h>
+#include <algorithm>
+#include <cmath>
+#include <iomanip>
+#include <iostream>
+#include <numeric>
+#include <vector>
 
 // choose double prec throughout
 typedef double Real;
 typedef long Integer;
 
 void test_kernel_ts(const Real* Xs, const Real* Ys, const Real* Zs,
-                    int ns, const Real* charge,  
+                    int ns, const Real* charge,
                     const Real* Xt, const Real* Yt, const Real* Zt, int nt, Real* pot){
 #pragma omp parallel for
     for(int t = 0; t < nt; t++){
         for(int s = 0; s < ns; s++){
-            
+
             Real dx = Xs[s] - Xt[t];
             Real r2 = dx*dx;
             dx = Ys[s] - Yt[t];
@@ -48,13 +50,13 @@ void test_kernel_ts(const Real* Xs, const Real* Ys, const Real* Zs,
 }
 
 void test_kernel_st(const Real* Xs, const Real* Ys, const Real* Zs,
-                    int ns, const Real* charge,  
+                    int ns, const Real* charge,
                  const Real* Xt, const Real* Yt, const Real* Zt, int nt, Real* pot){
   for(int s = 0; s < ns; s++){
     // note we can't omp over sources without atomic update to pot[t] which is slow
 #pragma omp parallel for
     for(int t = 0; t < nt; t++){
-            
+
             Real dx = Xs[s] - Xt[t];
             Real r2 = dx*dx;
             dx = Ys[s] - Yt[t];
@@ -78,7 +80,7 @@ void test_kernel_st(const Real* Xs, const Real* Ys, const Real* Zs,
 #endif
 
 void test_kernel_vec512(const Real* Xs, const Real* Ys, const Real* Zs,
-                    int ns, const Real* charge,  
+                    int ns, const Real* charge,
                  const Real* Xt, const Real* Yt, const Real* Zt, int nt, Real* pot){
 #pragma omp parallel for
     for(int t = 0; t < nt; t += 8){
@@ -89,7 +91,7 @@ void test_kernel_vec512(const Real* Xs, const Real* Ys, const Real* Zs,
         Yt_vec.load(Yt + t);
         Zt_vec.load(Zt + t);
         pot_vec.load(pot + t);
-        
+
         for(int s = 0; s < ns; s++){
             Vec8d dx = Vec8d(Xs[s]) - Xt_vec;
             Vec8d dy = Vec8d(Ys[s]) - Yt_vec;
@@ -104,7 +106,7 @@ void test_kernel_vec512(const Real* Xs, const Real* Ys, const Real* Zs,
 }
 
 void test_kernel_vec512_fast_rsqrt(const Real* Xs, const Real* Ys, const Real* Zs,
-                    int ns, const Real* charge,  
+                    int ns, const Real* charge,
                  const Real* Xt, const Real* Yt, const Real* Zt, int nt, Real* pot){
 #pragma omp parallel for
     for(int t = 0; t < nt; t += 8){
@@ -115,13 +117,13 @@ void test_kernel_vec512_fast_rsqrt(const Real* Xs, const Real* Ys, const Real* Z
         Yt_vec.load(Yt + t);
         Zt_vec.load(Zt + t);
         pot_vec.load(pot + t);
-        
+
         for(int s = 0; s < ns; s++){
             Vec8d dx = Vec8d(Xs[s]) - Xt_vec;
             Vec8d dy = Vec8d(Ys[s]) - Yt_vec;
             Vec8d dz = Vec8d(Zs[s]) - Zt_vec;
             Vec8d r2 = dx*dx+dy*dy+dz*dz;
-            
+
             // Newton iterations for rsqrt double precision
             Vec8d rinv = approx_rsqrt(r2);
             // Note the trick here changes the Newton iteration constants
@@ -143,7 +145,7 @@ void test_kernel_vec512_fast_rsqrt(const Real* Xs, const Real* Ys, const Real* Z
 }
 
 void test_kernel_vec256(const Real* Xs, const Real* Ys, const Real* Zs,
-                    int ns, const Real* charge,  
+                    int ns, const Real* charge,
                  const Real* Xt, const Real* Yt, const Real* Zt, int nt, Real* pot){
 #pragma omp parallel for
     for(int t = 0; t < nt; t += 4){
@@ -154,7 +156,7 @@ void test_kernel_vec256(const Real* Xs, const Real* Ys, const Real* Zs,
         Yt_vec.load(Yt + t);
         Zt_vec.load(Zt + t);
         pot_vec.load(pot + t);
-        
+
         for(int s = 0; s < ns; s++){
             Vec4d dx = Vec4d(Xs[s]) - Xt_vec;
             Vec4d dy = Vec4d(Ys[s]) - Yt_vec;
@@ -169,7 +171,7 @@ void test_kernel_vec256(const Real* Xs, const Real* Ys, const Real* Zs,
 }
 
 void test_kernel_vec256_fast_rsqrt(const Real* Xs, const Real* Ys, const Real* Zs,
-                    int ns, const Real* charge,  
+                    int ns, const Real* charge,
                  const Real* Xt, const Real* Yt, const Real* Zt, int nt, Real* pot){
 #pragma omp parallel for
     for(int t = 0; t < nt; t += 4){
@@ -180,13 +182,13 @@ void test_kernel_vec256_fast_rsqrt(const Real* Xs, const Real* Ys, const Real* Z
         Yt_vec.load(Yt + t);
         Zt_vec.load(Zt + t);
         pot_vec.load(pot + t);
-        
+
         for(int s = 0; s < ns; s++){
             Vec4d dx = Vec4d(Xs[s]) - Xt_vec;
             Vec4d dy = Vec4d(Ys[s]) - Yt_vec;
             Vec4d dz = Vec4d(Zs[s]) - Zt_vec;
             Vec4d r2 = dx*dx+dy*dy+dz*dz;
-            
+
             // Newton iterations for rsqrt double precision
             Vec4d rinv = approx_rsqrt(r2);
             // Note the trick here changes the Newton iteration constants
@@ -208,113 +210,68 @@ void test_kernel_vec256_fast_rsqrt(const Real* Xs, const Real* Ys, const Real* Z
 }
 #endif   // VCL
 
+// Return random real-valued standard vector of specified size
+std::vector<Real> random_vec(size_t N) {
+  std::vector<Real> a(N);
+  std::generate(a.begin(), a.end(), drand48);
+  return a;
+}
+
+// Test function for specified number of iterations at chargeand positions
+// and positions
+template <typename F>
+void test(const F& f, const std::string& desc,
+          size_t ntest, std::vector<Real>& charge,
+          std::vector<Real>& Xs, std::vector<Real>& Ys, std::vector<Real>& Zs,
+          std::vector<Real>& Xt, std::vector<Real>& Yt, std::vector<Real>& Zt) {
+  std::vector<Real> pot(Zt.size(), 0);
+  size_t ns = Xs.size();
+  size_t nt = Xt.size();
+  double t_start = omp_get_wtime();
+  for(int i = 0; i < ntest; ++i)
+    f(Xs.data(), Ys.data(), Zs.data(), ns, charge.data(),
+      Xt.data(), Yt.data(), Zt.data(), nt, pot.data());
+  double t_elapsed = omp_get_wtime() - t_start;
+  Real ans = std::accumulate(pot.begin(), pot.end(), 0.0);
+  double Gpair_per_sec = ntest * ns * nt / t_elapsed / 1e9;
+  std::cout << std::setprecision(16)
+            << "N=" << ns << ", M=" << nt << ". "
+            << desc << ", ans: " << ans
+            << std::endl;
+  std::cout << std::setprecision(3)
+            << "\t\t\t\ttime: " << t_elapsed << " s      \t"
+            << Gpair_per_sec << " Gpair/sec"
+            << std::endl;
+}
 
 // ------------------------------------------------------------------------------------------
 int main (void)
 {
-  int ns = 10000, nt = 10000, ntest = 5;
-  std::vector<Real> Xs(ns), Ys(ns), Zs(ns), Xt(nt), Yt(nt), Zt(nt), charge(ns), pot(nt);
-  std::cout << ntest << " repetitions each run...\n";
-  
-    // init
-  for (auto& x : Xs) x = drand48();   // sources
-  for (auto& x : Ys) x = drand48();
-  for (auto& x : Zs) x = drand48();
-  for (auto& x : Xt) x = drand48();  // targets
-  for (auto& x : Yt) x = drand48();
-  for (auto& x : Zt) x = drand48();
-  for (auto& x : charge) x = drand48();
-  
-  // kernel run vec 8d  ... only useful if have AVX512
-  for (auto& x : pot) x = 0.0;            // needed since funcs add to pot
-  Real ts = omp_get_wtime();
-  for(int i=0; i<ntest; i++) {
-    test_kernel_vec512(&Xs[0], &Ys[0], &Zs[0], ns, &charge[0], 
-                   &Xt[0], &Yt[0], &Zt[0], nt, &pot[0]);
-  }
-  Real t = omp_get_wtime()-ts;
-  Real ans = 0;
-  for(auto& x : pot) ans+=x;    // this answer checks it agrees btw methods, to 15 digits
-  std::cout << std::setprecision(16);
-  std::cout<<"N="<<ns<<", M="<<nt<<". manual VCL SIMD avx512, ans: "<<ans<<"\n";
-  std::cout << std::setprecision(3);
-  std::cout<<"\t\t\t\ttime: "<<t<<" s      \t"<<ntest*ns*nt/t/1e9<<" Gpair/sec\n";
+  int ns = 10000, nt = 10000, ntest = 20;
+  std::vector<Real> Xs(random_vec(ns)), Ys(random_vec(ns)), Zs(random_vec(ns)),
+      Xt(random_vec(nt)), Yt(random_vec(nt)), Zt(random_vec(nt)),
+      charge(random_vec(ns));
 
-  // kernel run vec 8d  ... only useful if have AVX512, fast rsqrt
-  for (auto& x : pot) x = 0.0;            // needed since funcs add to pot
-  ts = omp_get_wtime();
-  for(int i=0; i<ntest; i++) {
-    test_kernel_vec512_fast_rsqrt(&Xs[0], &Ys[0], &Zs[0], ns, &charge[0], 
-                   &Xt[0], &Yt[0], &Zt[0], nt, &pot[0]);
-  }
-  t = omp_get_wtime()-ts;
-  ans = 0;
-  for(auto& x : pot) ans+=x;    // this answer checks it agrees btw methods, to 15 digits
-  std::cout << std::setprecision(16);
-  std::cout<<"N="<<ns<<", M="<<nt<<". manual VCL SIMD avx512 fast rsqrt, ans: "<<ans<<"\n";
-  std::cout << std::setprecision(3);
-  std::cout<<"\t\t\t\ttime: "<<t<<" s      \t"<<ntest*ns*nt/t/1e9<<" Gpair/sec\n";
+  std::cout << ntest << " repetitions each run..."
+            << std::endl;
 
-  // kernel run vec 4d   ... tests avx2
-  for (auto& x : pot) x = 0.0;
-  ts = omp_get_wtime();
-  for(int i=0; i<ntest; i++) {
-    test_kernel_vec256(&Xs[0], &Ys[0], &Zs[0], ns, &charge[0], 
-                   &Xt[0], &Yt[0], &Zt[0], nt, &pot[0]);
-  }
-  t = omp_get_wtime()-ts;
-  ans = 0;
-  for(auto& x : pot) ans+=x;
-  std::cout << std::setprecision(16);
-  std::cout<<"N="<<ns<<", M="<<nt<<". manual VCL SIMD avx2 (256), ans: "<<ans<<"\n";
-  std::cout << std::setprecision(3);
-  std::cout<<"\t\t\t\ttime: "<<t<<" s      \t"<<ntest*ns*nt/t/1e9<<" Gpair/sec\n";
+  // avx512 tests, with and without fast sqrt
+  test(&test_kernel_vec512, "manual VCL SIMD avx512",
+       ntest, charge, Xs, Ys, Zs, Xt, Yt, Zt);
+  test(&test_kernel_vec512_fast_rsqrt, "manual VCL SIMD avx512 fast rsqrt",
+       ntest, charge, Xs, Ys, Zs, Xt, Yt, Zt);
 
-  // kernel run vec 4d   ... tests avx2, fast rsqrt
-  for (auto& x : pot) x = 0.0;
-  ts = omp_get_wtime();
-  for(int i=0; i<ntest; i++) {
-    test_kernel_vec256_fast_rsqrt(&Xs[0], &Ys[0], &Zs[0], ns, &charge[0], 
-                   &Xt[0], &Yt[0], &Zt[0], nt, &pot[0]);
-  }
-  t = omp_get_wtime()-ts;
-  ans = 0;
-  for(auto& x : pot) ans+=x;
-  std::cout << std::setprecision(16);
-  std::cout<<"N="<<ns<<", M="<<nt<<". manual VCL SIMD avx2 (256) fast rsqrt, ans: "<<ans<<"\n";
-  std::cout << std::setprecision(3);
-  std::cout<<"\t\t\t\ttime: "<<t<<" s      \t"<<ntest*ns*nt/t/1e9<<" Gpair/sec\n";
-  
-  // kernel run ts
-  for (auto& x : pot) x = 0.0;
-  ts = omp_get_wtime();
-  for(int i=0; i<ntest; i++) {
-    test_kernel_ts(&Xs[0], &Ys[0], &Zs[0], ns, &charge[0], 
-                   &Xt[0], &Yt[0], &Zt[0], nt, &pot[0]);
-  }
-  t = omp_get_wtime()-ts;
-  ans = 0;
-  for(auto& x : pot) ans+=x;
-    std::cout << std::setprecision(16);
-  std::cout<<"N="<<ns<<", M="<<nt<<". target outer loop, ans: "<<ans<<"\n";
-    std::cout << std::setprecision(3);
-  std::cout<<"\t\t\t\ttime: "<<t<<" s      \t"<<ntest*ns*nt/t/1e9<<" Gpair/sec\n";
-    
-  // kernel run st
-  for (auto& x : pot) x = 0.0;
-  ts = omp_get_wtime();
-  for(int i=0; i<ntest; i++) {
-    test_kernel_st(&Xs[0], &Ys[0], &Zs[0], ns, &charge[0], 
-                   &Xt[0], &Yt[0], &Zt[0], nt, &pot[0]);
-  }
-  t = omp_get_wtime()-ts;
-  ans = 0;
-  for(auto& x : pot) ans+=x;
-    std::cout << std::setprecision(16);
-  std::cout<<"N="<<ns<<", M="<<nt<<". source outer loop, ans: "<<ans<<"\n";
-  std::cout << std::setprecision(3);
-  std::cout<<"\t\t\t\ttime: "<<t<<" s      \t"<<ntest*ns*nt/t/1e9<<" Gpair/sec\n";
-  
+  // avx2 tests, with and without fast sqrt
+  test(&test_kernel_vec256, "manual VCL SIMD avx2 (256)",
+       ntest, charge, Xs, Ys, Zs, Xt, Yt, Zt);
+  test(&test_kernel_vec256_fast_rsqrt, "manual VCL SIMD avx2 (256) fast rsqrt",
+       ntest, charge, Xs, Ys, Zs, Xt, Yt, Zt);
+
+  // non-avx tests, with differing loop orders
+  test(&test_kernel_ts, "target outer loop",
+       ntest, charge, Xs, Ys, Zs, Xt, Yt, Zt);
+  test(&test_kernel_st, "source outer loop",
+       ntest, charge, Xs, Ys, Zs, Xt, Yt, Zt);
+
   return 0;
 }
-
