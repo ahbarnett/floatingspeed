@@ -1346,6 +1346,7 @@ static inline Vec8d sqrt(Vec8d const & a) {
     return Vec8d(sqrt(a.get_low()), sqrt(a.get_high()));
 }
 
+// aprrox 1/sqrt(a) function, takes double type as function argument
 static inline Vec8d approx_rsqrt(Vec8d const & a) {
     return Vec8d(approx_rsqrt(a.get_low()), approx_rsqrt(a.get_high()));
 }

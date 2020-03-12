@@ -1379,6 +1379,7 @@ static inline Vec8d sqrt(Vec8d const & a) {
     return _mm512_sqrt_pd(a);
 }
 
+// aprrox 1/sqrt(a) function, takes double type as function argument
 static inline Vec8d approx_rsqrt(Vec8d const & a) {
     return _mm512_cvtps_pd(_mm256_rsqrt_ps(_mm512_cvtpd_ps(a)));
 }

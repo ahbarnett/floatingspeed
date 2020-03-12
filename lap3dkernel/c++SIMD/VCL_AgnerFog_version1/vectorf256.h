@@ -1785,6 +1785,7 @@ static inline Vec4d sqrt(Vec4d const & a) {
     return _mm256_sqrt_pd(a);
 }
 
+// aprrox 1/sqrt(a) function, takes double type as function argument
 static inline Vec4d approx_rsqrt(Vec4d const & a) {
     return _mm256_cvtps_pd(_mm_rsqrt_ps(_mm256_cvtpd_ps(a)));
 }

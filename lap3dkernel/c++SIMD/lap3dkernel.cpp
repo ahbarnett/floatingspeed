@@ -27,14 +27,6 @@
 typedef double Real;
 typedef long Integer;
 
-template <Integer e, class Real> static inline constexpr Real pow_helper(Real b) {
-  return (e > 0) ? ((e & 1) ? b : Real(1)) * pow_helper<(e>>1),Real>(b*b) : Real(1);
-}
-
-template <Integer e, class Real> inline constexpr Real pow(Real b) {
-  return (e > 0) ? pow_helper<e,Real>(b) : 1/pow_helper<-e,Real>(b);
-}
-
 void test_kernel_ts(const Real* Xs, const Real* Ys, const Real* Zs,
                     int ns, const Real* charge,  
                     const Real* Xt, const Real* Yt, const Real* Zt, int nt, Real* pot){
@@ -131,8 +123,15 @@ void test_kernel_vec512_fast_rsqrt(const Real* Xs, const Real* Ys, const Real* Z
             
             // Newton iterations for rsqrt double precision
             Vec8d rinv = approx_rsqrt(r2);
+            // Note the trick here changes the Newton iteration constants
+            // the standard two Newton iterations are,
+            // rinv *= ((3.0) - r2 * rinv * rinv) * 0.5;
+            // rinv *= ((3.0) - r2 * rinv * rinv) * 0.5;
+            // we can save one simd multiplication " * 0.5 " by using the following trick
+            // first Newton iteration
             rinv *= ((3.0) - r2 * rinv * rinv);
-            rinv *= ((3.0 * pow<pow<0>(3)*3-1>(2.0)) - r2 * rinv * rinv) * (pow<(pow<0>(3)*3-1)*3/2+1>(0.5));
+            // second Newton iteration
+            rinv *= ((12.0) - r2 * rinv * rinv) * (0.0625);
 
             pot_vec += Vec8d(charge[s]) * rinv;
         }
@@ -189,8 +188,15 @@ void test_kernel_vec256_fast_rsqrt(const Real* Xs, const Real* Ys, const Real* Z
             
             // Newton iterations for rsqrt double precision
             Vec4d rinv = approx_rsqrt(r2);
+            // Note the trick here changes the Newton iteration constants
+            // the standard two Newton iterations are,
+            // rinv *= ((3.0) - r2 * rinv * rinv) * 0.5;
+            // rinv *= ((3.0) - r2 * rinv * rinv) * 0.5;
+            // we can save one simd multiplication " * 0.5 " by using the following trick
+            // first Newton iteration
             rinv *= ((3.0) - r2 * rinv * rinv);
-            rinv *= ((3.0 * pow<pow<0>(3)*3-1>(2.0)) - r2 * rinv * rinv) * (pow<(pow<0>(3)*3-1)*3/2+1>(0.5));
+            // second Newton iteration
+            rinv *= ((12.0) - r2 * rinv * rinv) * (0.0625);
 
             pot_vec += Vec4d(charge[s]) * rinv;
         }
