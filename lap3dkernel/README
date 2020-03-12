@@ -1,23 +1,33 @@
 lap3dkernel.
 
-Dense direct N-body performance tests.  Currently this has one
-directory for each language implementation, with code for summing 1/r
-from 1e4 sources to 1e4 targets, for double precision reals.  This is
-my own version of David Stein's similar performance comparison on the
-same task.
+Dense direct N-body floating-point performance tests.  Currently this
+has one directory for each language implementation, with code for
+summing 1/r from 1e4 sources to 1e4 targets, for double precision
+reals.  This is my own version of David Stein's similar performance
+comparison on the same task.
 
-Alex Barnett, Mar 2020
+Alex Barnett
+with contributions by:
+Libin Lu
+Bob Carpenter
+Manas Rachh
 
+March 2020
 
 To run all tests in linux (assumes you have all packages and compilers; you
 may need to change g++-7 to your version of g++, etc):
 
   ./run_all_tests.sh
 
+Note: these tests only compare one type of numerical problem; language choice
+for your application should be based also on many other factors.
+
+
 
 RESULTS:
 
-i7-7700HQ (2017-era laptop, 2.8GHz, 3.8GHz turbo, avx2, 4-core, 8-threads):
+-------------------------------------------------------------------------------
+i7-7700HQ (2017-era laptop, 2.8GHz, 3.8GHz turbo, avx2, 4-core, use 8 threads):
 
 * C++ (GCC 7) + omp:                               1.1  Gpair/sec
       manual SIMD VCL vectorclass library + omp    2.7  Gpair/sec
@@ -30,14 +40,12 @@ i7-7700HQ (2017-era laptop, 2.8GHz, 3.8GHz turbo, avx2, 4-core, 8-threads):
 * MATLAB (R2017a, uses all 8 threads):             0.11 Gpair/sec
 * octave (w/ same code as MATLAB, uses 1 thread):  0.06 Gpair/sec
 
-Notes: Clearly C++ w/ VCL beats others by 2x, and nearly 4x w/ custom rsqrt.
+Notes: - Clearly C++ w/ VCL beats others by 2x, and nearly 4x w/ custom rsqrt.
+       - g++-7 single core is 0.17, but g++9 single core is 0.34.
+       - It would be interesting to try the single-precision test.
 
-It would be interesting to try the single-precision test, and xeon.
-
-I note g++-7 single core is 0.17, but g++9 single core is 0.34.
-
-
-Intel Xeon Gold 6128 CPU (2019 workstation, 3.4GHz, avx512, 12-core, 24-threads):
+-------------------------------------------------------------------------------
+Intel Xeon Gold 6128 CPU (2019 workstn, 3.4GHz, avx512, 12-core, use 12 threads):
 
 * C++ (GCC 9) + omp:                               4.1  Gpair/sec
       manual SIMD VCL vectorclass library + omp    6.1  Gpair/sec
@@ -51,8 +59,8 @@ Intel Xeon Gold 6128 CPU (2019 workstation, 3.4GHz, avx512, 12-core, 24-threads)
    native py:                                      0.05 Gpair/sec     
 * MATLAB (R2019a):                                 0.1  Gpair/sec
 
-Notes: The above results were run with 12 OMP threads, the performance with 24 threads
-was worse
+Notes: - The above results were run with 12 OMP threads; the performance with
+         24 threads was worse.
 
 
 
