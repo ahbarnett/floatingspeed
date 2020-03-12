@@ -3,17 +3,17 @@
 // ccm_simd_demo github repo of 12/10/19.
 // Coords are in 3D, and kernel is 1/r (not the exp of abs(r) in 1D that Libin used).
 
-// Note VCL includes rsqrt in single prec (eg 8f, 16f), but not double that we test here.
+// Note VCL version 1 includes rsqrt in single prec (eg 8f, 16f), but not double that we test here. Hence we added custom double rsqrt to the VCL in this repo.
 
-// TO DO: single prec tests, including rsqrt
+// TO DO: single prec tests.
 
-// Alex Barnett 3/4/20
+// Alex Barnett, Libin Lu   3/11/20
 
-// Compile & run:
+// Compile & run: (better: use GCC 7 or 9)
 
-// g++-7 -fPIC -g -O3 -march=native -funroll-loops -fopenmp -std=c++17 -DVCL -I./VCL_AgnerFog_version1 -fopenmp lap3dkernel.cpp; ./a.out
+// g++ -fPIC -g -O3 -march=native -funroll-loops -fopenmp -std=c++17 -DVCL -I./VCL_AgnerFog_version1+rsqrt -fopenmp lap3dkernel.cpp; ./a.out
 
-// Libin's compilation commands:
+// Libin's old compilation commands:
 // icpc -fPIC -g -O3 -march=native -funroll-loops -fopenmp -std=c++17 -DVCL -I./version1 main.cc; ./a.out
 // g++ -fPIC -g -O3 -march=native -funroll-loops -fopenmp -std=c++17 -DVCL -I./version1 main.cc; ./a.out
 // /cm/shared/sw/pkg/vendor/intel-pstudio/2019-3/vtune_amplifier/bin64/amplxe-cl -collect hotspots ./a.out

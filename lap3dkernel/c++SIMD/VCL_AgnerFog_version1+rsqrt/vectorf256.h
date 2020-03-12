@@ -20,6 +20,8 @@
 *
 * (c) Copyright 2012-2019 Agner Fog.
 * Apache License version 2.0 or later.
+*
+* Customized version with added double approx rsqrt (Libin Lu)
 *****************************************************************************/
 
 // check combination of header files
@@ -1786,6 +1788,7 @@ static inline Vec4d sqrt(Vec4d const & a) {
 }
 
 // aprrox 1/sqrt(a) function, takes double type as function argument
+// (custom: added by Libin Lu)
 static inline Vec4d approx_rsqrt(Vec4d const & a) {
     return _mm256_cvtps_pd(_mm_rsqrt_ps(_mm256_cvtpd_ps(a)));
 }

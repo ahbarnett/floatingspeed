@@ -19,7 +19,9 @@
 * This header file defines operators and functions for these vectors.
 *
 * (c) Copyright 2014-2019 Agner Fog.
-* Apache License version 2.0 or later.
+* Apache License version 2.0 or later
+*
+* Customized version with added double approx rsqrt (Libin Lu)
 *****************************************************************************/
 
 // check combination of header files
@@ -1380,6 +1382,7 @@ static inline Vec8d sqrt(Vec8d const & a) {
 }
 
 // aprrox 1/sqrt(a) function, takes double type as function argument
+// (custom: added by Libin Lu)
 static inline Vec8d approx_rsqrt(Vec8d const & a) {
     return _mm512_cvtps_pd(_mm256_rsqrt_ps(_mm512_cvtpd_ps(a)));
 }

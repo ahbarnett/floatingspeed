@@ -3,7 +3,7 @@
 
 echo C++SIMD:
 # assumes g++ is compiler, but you'll want eg g++-9 for best single-thread:
-(cd c++SIMD; g++ -fPIC -O3 -march=native -funroll-loops -fopenmp -std=c++17 -DVCL -I./VCL_AgnerFog_version1 -fopenmp lap3dkernel.cpp; ./a.out)
+(cd c++SIMD; g++ -fPIC -O3 -march=native -funroll-loops -fopenmp -std=c++17 -DVCL -I./VCL_AgnerFog_version1+rsqrt -fopenmp lap3dkernel.cpp; ./a.out)
 
 echo FORTRAN:
 # assumes gfortran is your compiler; see above
