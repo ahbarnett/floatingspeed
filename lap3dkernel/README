@@ -47,6 +47,7 @@ Notes: - Clearly C++ w/ VCL beats others by 2x, and nearly 4x w/ custom rsqrt.
        - It would be interesting to try the single-precision test.
          So far have julia Float32: speeds are same or worse than Float64,
          apart from full manual SIMD.jl:           8.9  Gpair/sec (incredibly)
+       - the machine is Alex's laptop
 
 -------------------------------------------------------------------------------
 Intel Xeon Gold 6128 CPU (2019 workstn, 3.4GHz, avx512, 12-core, use 12 threads):
@@ -59,12 +60,19 @@ Intel Xeon Gold 6128 CPU (2019 workstn, 3.4GHz, avx512, 12-core, use 12 threads)
       manual SIMD VCL custom double rsqrt + omp    12.8 Gpair/sec      
 * fortran (GCC 9) + omp:                           4.0  Gpair/sec
 * fortran (ifort 2019) + omp:                      7.7  Gpair/sec
-* python (Intel) w/ numba:                         2.5  Gpair/sec
-   native py:                                      0.05 Gpair/sec     
+* julia w/ @threads writing C-like code:           2.0  Gpair/sec
+   full manual SIMD via SIMD.jl                    4.6  Gpair/sec
+   native julia:                                   0.05 Gpair/sec
+* python (Intel) w/ numba:                         4.0  Gpair/sec
+   native py:                                      0.04 Gpair/sec     
 * MATLAB (R2019a):                                 0.1  Gpair/sec
 
 Notes: - The above results were run with 12 OMP threads; the performance with
-         24 threads was worse.
-
-
+         24 threads was worse in many cases.
+       - the machine is ccmlin001
+       - Recent julia results w/ different precision or #threads than above:
+            12 threads single full manual SIMD.jl  21.4 Gpair/sec
+            24 threads single full manual SIMD.jl  25.2 Gpair/sec
+            24 threads double full manual SIMD.jl  8.3  Gpair/sec
+       - suggests it would be nice to have custom double rsqrt added to SIMD.jl
 
