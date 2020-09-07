@@ -18,9 +18,9 @@ echo FORTRAN:
 #(cd fortran; ifort lap3dpottest.f90 -qopenmp -fPIC -O3 -march=native -funroll-loops -mkl; ./a.out)
 
 
-echo JULIA:
+echo JULIA with $(nproc) processors:
 # note you'll need to import some Pkgs into your julia distro
-JULIA_NUM_THREADS=$(nproc) julia julia/lap3dkernel.jl
+JULIA_NUM_THREADS=$(nproc) julia --check-bounds=no -O3 julia/lap3dkernel.jl
 
 echo PYTHON:
 # assumes python is your v3 version w/ numba, eg via: source activate idp
