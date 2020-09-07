@@ -14,10 +14,8 @@ using LinearAlgebra
 using Printf
 using BenchmarkTools
 using Base.Threads
-using SIMD
-using VectorizationBase: pick_vector_width
-# this is useless, apparently:
-#using Devectorize
+using SIMD # helps when "manual" vectorization is needed
+using VectorizationBase: pick_vector_width # use to to determine appropriate size of register vector
 
 function lap3dcharge(y,q,x)       # vec over targs
     T = eltype(y)
@@ -64,7 +62,7 @@ function lap3dcharge_devec_par(y,q,x)   # multi-threaded version of above
     return pot
 end
 
-function lap3dcharge_devec_par_new(y,q,x,V=Vec{4,Float64})   # multi-threaded version of above
+function lap3dcharge_devec_par_new(y,q,x,V=Vec{4,Float64})   
     xt,yt,zt = x[1,:],x[2,:],x[3,:]
     xs,ys,zs = y[1,:],y[2,:],y[3,:]
     lap3dcharge_devec_par_new(xs,ys,zs,xt,yt,zt,q,V)
@@ -99,9 +97,9 @@ function _inner_loop(Xt_vec::T,Yt_vec::T,Zt_vec::T,t,xs,ys,zs,q) where {T}
     return pot_vec
 end
     
-for T = (Float32,Float64) # element type (e.g. Float64 or Float32)
-    N = pick_vector_width(T)
-    V = Vec{N,T}
+for T in (Float32,Float64)   # element type (e.g. Float64 or Float32)
+    N = pick_vector_width(T) # number of elements of type T that can be stored on the vector register
+    V = Vec{N,T} # SIMD.jl type
     ns = 10000
     nt = 10000
     x = rand(T,3,nt)
@@ -109,7 +107,6 @@ for T = (Float32,Float64) # element type (e.g. Float64 or Float32)
     q = randn(T,ns)    # charges
     t = @elapsed lap3dcharge(y,q,x)    # discards return value
     t = @elapsed lap3dcharge(y,q,x)    # discards return value - is already compiled
-    #pot, t = @timed lap3dcharge(y,q,x)      # gets the time in secs
     check = lap3dcharge(y,q,x) |> sum
     @printf("Result with type %s: \n",T)
     @printf("targ-vec: %d src-targ pairs, ans: %f \n \t time %.3g s %.3g Gpair/s\n",ns*nt,check,t,ns*nt/t/1e9)
