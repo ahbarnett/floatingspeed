@@ -11,11 +11,12 @@ with contributions by:
 Libin Lu
 Bob Carpenter
 Manas Rachh
+Luiz Faria
 
-March 2020
+Sept 2020
 
 To run all tests in linux (assumes you have all packages and compilers; you
-may need to change g++-7 to your version of g++, etc):
+may need to change g++ to your version, g++-9, etc):
 
   ./run_all_tests.sh
 
@@ -30,10 +31,11 @@ RESULTS:
 i7-7700HQ (2017-era laptop, 2.8GHz, 3.8GHz turbo, avx2, 4-core, use 8 threads):
 
 * C++ (GCC 7) + omp:                               1.1  Gpair/sec
-      manual SIMD VCL vectorclass library + omp    2.7  Gpair/sec
-      manual SIMD VCL custom double rsqrt + omp    4.7  Gpair/sec      
+   manual SIMD VCL vectorclass library + omp       2.7  Gpair/sec
+   manual SIMD VCL custom double rsqrt + omp       4.7  Gpair/sec      
 * fortran (GCC 7) + omp:                           1.3  Gpair/sec
-* julia w/ @threads @simd writing C-like code:     1.3  Gpair/sec
+* julia w/ @threads writing C-like code:           1.3  Gpair/sec
+   full manual SIMD via SIMD.jl                    2.7  Gpair/sec
    native julia:                                   0.06 Gpair/sec
 * python (Intel) w/ numba: after jit compile 3 s:  1.3  Gpair/sec
    native py:                                      0.05 Gpair/sec     
@@ -41,8 +43,10 @@ i7-7700HQ (2017-era laptop, 2.8GHz, 3.8GHz turbo, avx2, 4-core, use 8 threads):
 * octave (w/ same code as MATLAB, uses 1 thread):  0.06 Gpair/sec
 
 Notes: - Clearly C++ w/ VCL beats others by 2x, and nearly 4x w/ custom rsqrt.
-       - g++-7 single core is 0.17, but g++9 single core is 0.34.
+       - g++-7 single core is 0.17, but g++-9 single core is 0.34.
        - It would be interesting to try the single-precision test.
+         So far have julia Float32: speeds are same or worse than Float64,
+         apart from full manual SIMD.jl:           8.9  Gpair/sec (incredibly)
 
 -------------------------------------------------------------------------------
 Intel Xeon Gold 6128 CPU (2019 workstn, 3.4GHz, avx512, 12-core, use 12 threads):

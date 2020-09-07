@@ -1,5 +1,6 @@
 # play with julia, using laplace 3d kernel eval.
 # Barnett 9/18/18.  After Steven Johnson tweaking, 2/20/20.
+# manual SIMD version, Luiz M Faria 9/7/20.
 
 #= comment block
 =#
@@ -36,8 +37,8 @@ function lap3dcharge_devec(y,q,x)       # unwrap i,j.   C-style coding, SIMD
     ns = size(y,2)
     pot = zeros(T,1,nt)    # note zeros(nt), col vec, fails to add r later
     prefac = 1/(4*pi)
-    @inbounds   for i = 1:nt      # targs
-        @simd for j = 1:ns          # srcs
+    @inbounds for i = 1:nt      # targs
+        for j = 1:ns          # srcs;  using @simd here makes no difference
             #r2ij = sum((x[:,i] - y[:,j]).^2)      # sq dist - terrible!
             r2ij = (x[1,i]-y[1,j])^2+ (x[2,i]-y[2,j])^2+ (x[3,i]-y[3,j])^2
             rij = sqrt(r2ij)
@@ -53,7 +54,7 @@ function lap3dcharge_devec_par(y,q,x)   # multi-threaded version of above
     pot = zeros(T,nt)    # note zeros(nt), col vec, fails to add r later
     prefac = 1/(4*pi)
     @threads for i in eachindex(pot)      # targs.
-        @simd for j in eachindex(q)          # srcs
+        for j in eachindex(q)   # srcs;  using @simd here makes no difference
             @inbounds r2ij = (x[1,i]-y[1,j])^2+ (x[2,i]-y[2,j])^2+ (x[3,i]-y[3,j])^2
             #rij = sqrt(r2ij)
             @inbounds pot[i] +=  prefac * q[j] / sqrt(r2ij) #rij
@@ -62,13 +63,14 @@ function lap3dcharge_devec_par(y,q,x)   # multi-threaded version of above
     return pot
 end
 
-function lap3dcharge_devec_par_new(y,q,x,V=Vec{4,Float64})   
+# next three funcs are manual SIMD version by Luiz M Faria...
+function lap3dcharge_devec_par_manualSIMD(y,q,x,V=Vec{4,Float64})   
     xt,yt,zt = x[1,:],x[2,:],x[3,:]
     xs,ys,zs = y[1,:],y[2,:],y[3,:]
-    lap3dcharge_devec_par_new(xs,ys,zs,xt,yt,zt,q,V)
+    lap3dcharge_devec_par_manualSIMD(xs,ys,zs,xt,yt,zt,q,V)
 end
 
-function lap3dcharge_devec_par_new(xs,ys,zs,xt,yt,zt,q,V)
+function lap3dcharge_devec_par_manualSIMD(xs,ys,zs,xt,yt,zt,q,V)
     T = eltype(xs)
     @assert length(xs) == length(ys) == length(zs)
     @assert length(xt) == length(xt) == length(zt)
@@ -96,10 +98,13 @@ function _inner_loop(Xt_vec::T,Yt_vec::T,Zt_vec::T,t,xs,ys,zs,q) where {T}
     end
     return pot_vec
 end
-    
+
+
+# loop over both single and double precision versions...
 for T in (Float32,Float64)   # element type (e.g. Float64 or Float32)
     N = pick_vector_width(T) # number of elements of type T that can be stored on the vector register
-    V = Vec{N,T} # SIMD.jl type
+    V = Vec{N,T} # SIMD.jl type (used just for lap3dcharge_devec_par_manualSIMD)
+    
     ns = 10000
     nt = 10000
     x = rand(T,3,nt)
@@ -125,9 +130,9 @@ for T in (Float32,Float64)   # element type (e.g. Float64 or Float32)
     @printf("devec par: %d src-targ pairs, ans: %f \n \t time %.3g s %.3g Gpair/s\n",ns*nt,check,t,ns*nt/t/1e9)
     # 1.26 Gpair/s, matches py+numba
 
-    t = @elapsed lap3dcharge_devec_par_new(y,q,x,V)    # discards return value
-    t = @elapsed lap3dcharge_devec_par_new(y,q,x,V)    # discards return value
-    check = lap3dcharge_devec_par_new(y,q,x,V) |> sum
+    t = @elapsed lap3dcharge_devec_par_manualSIMD(y,q,x,V)    # discards return value
+    t = @elapsed lap3dcharge_devec_par_manualSIMD(y,q,x,V)    # discards return value
+    check = lap3dcharge_devec_par_manualSIMD(y,q,x,V) |> sum
     @printf("devec par new: %d src-targ pairs, ans: %f \n \t time %.3g s %.3g Gpair/s\n",ns*nt,check,t,ns*nt/t/1e9)
 end
 
