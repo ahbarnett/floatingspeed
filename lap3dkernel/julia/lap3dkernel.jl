@@ -18,6 +18,9 @@ using Base.Threads
 using SIMD # helps when "manual" vectorization is needed
 using VectorizationBase: pick_vector_width # use to to determine appropriate size of register vector
 
+# for turbo David Stein versions below...
+using LoopVectorization
+
 function lap3dcharge(y,q,x)       # vec over targs
     T = eltype(y)
     nt = size(x,2)
@@ -99,7 +102,43 @@ function _inner_loop(Xt_vec::T,Yt_vec::T,Zt_vec::T,t,xs,ys,zs,q) where {T}
     return pot_vec
 end
 
+function lap3dcharge_tturbo(y,q,x)   # David Stein LoopVec tturbo
+    # NB tturbo means:  @turbo threads=true
+    T = eltype(y)
+    nt = size(x,2)
+    pot = zeros(T,nt)
+    prefac = 1/(4*pi)
+    @tturbo for i in eachindex(pot)      # targs.
+        accum = zero(T)
+        for j in eachindex(q)
+            r2ij = (x[1,i]-y[1,j])^2+ (x[2,i]-y[2,j])^2+ (x[3,i]-y[3,j])^2
+            accum +=  prefac * q[j] / sqrt(r2ij) #rij
+        end
+        pot[i] = accum
+    end
+    return pot
+end
 
+function lap3dcharge_turbo(y,q,x)   # David Stein LoopVec turbo + threads
+    T = eltype(y)
+    nt = size(x,2)
+    pot = zeros(T,nt)
+    prefac = 1/(4*pi)
+    @inbounds @threads for i in eachindex(pot)      # targs.
+        accum = zero(T)
+        @turbo for j in eachindex(q)
+            r2ij = (x[1,i]-y[1,j])^2+ (x[2,i]-y[2,j])^2+ (x[3,i]-y[3,j])^2
+            accum +=  prefac * q[j] / sqrt(r2ij) #rij
+        end
+        pot[i] = accum
+    end
+    return pot
+end
+
+
+
+
+# ================= MAIN ===================================================
 # loop over both single and double precision versions...
 for T in (Float32,Float64)   # element type (e.g. Float64 or Float32)
     N = pick_vector_width(T) # number of elements of type T that can be stored on the vector register
@@ -130,10 +169,24 @@ for T in (Float32,Float64)   # element type (e.g. Float64 or Float32)
     @printf("devec par: %d src-targ pairs, ans: %f \n \t time %.3g s %.3g Gpair/s\n",ns*nt,check,t,ns*nt/t/1e9)
     # 1.26 Gpair/s, matches py+numba
 
-    t = @elapsed lap3dcharge_devec_par_manualSIMD(y,q,x,V)    # discards return value
-    t = @elapsed lap3dcharge_devec_par_manualSIMD(y,q,x,V)    # discards return value
-    check = lap3dcharge_devec_par_manualSIMD(y,q,x,V) |> sum
-    @printf("devec par new: %d src-targ pairs, ans: %f \n \t time %.3g s %.3g Gpair/s\n",ns*nt,check,t,ns*nt/t/1e9)
+    # Luis Faria's tests of Sept 2020:
+    if false          # seems to fail after update to 1.6.2, pkg updates
+        t = @elapsed lap3dcharge_devec_par_manualSIMD(y,q,x,V)    # discards return value
+        t = @elapsed lap3dcharge_devec_par_manualSIMD(y,q,x,V)    # discards return value
+        check = lap3dcharge_devec_par_manualSIMD(y,q,x,V) |> sum
+        @printf("devec par new: %d src-targ pairs, ans: %f \n \t time %.3g s %.3g Gpair/s\n",ns*nt,check,t,ns*nt/t/1e9)
+    end
+
+    # David Stein's tests of July 2021:
+    t = @elapsed lap3dcharge_turbo(y,q,x)    # discards return value
+    t = @elapsed lap3dcharge_turbo(y,q,x)    # discards return value
+    check = lap3dcharge_turbo(y,q,x) |> sum
+    @printf("LV turbo: %d src-targ pairs, ans: %f \n \t time %.3g s %.3g Gpair/s\n",ns*nt,check,t,ns*nt/t/1e9)
+
+    t = @elapsed lap3dcharge_tturbo(y,q,x)    # discards return value
+    t = @elapsed lap3dcharge_tturbo(y,q,x)    # discards return value
+    check = lap3dcharge_tturbo(y,q,x) |> sum
+    @printf("LV tturbo: %d src-targ pairs, ans: %f \n \t time %.3g s %.3g Gpair/s\n",ns*nt,check,t,ns*nt/t/1e9)
 end
 
 # S. Johnson chat: use benchmark tools.
