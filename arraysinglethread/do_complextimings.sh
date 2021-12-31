@@ -28,8 +28,8 @@ export FLAGS="-O3 -march=native -fcx-limited-range"
 
 # compile and run
 
-#GF=gfortran
-GF=gfortran-7
+GF=gfortran
+#GF=gfortran-7
 
 $GF complexmulttiming.f -o complexmulttimingf $FLAGS
 echo Fortran:
@@ -38,8 +38,8 @@ echo Fortran:
 # needed for complex.h if modern g++ version:
 FLAGS+=" -std=c++03"
 
-#GXX=g++
-GXX=g++-7
+GXX=g++
+#GXX=g++-7
 
 $GXX utils.cpp -c
 $GXX complexmulttiming.cpp utils.o -o complexmulttimingc $FLAGS -D USE_C_TYPE_COMPLEX
