@@ -193,3 +193,29 @@ end
 # @btime lap3dcharge_devec_par($y,$q,$x);
 # the $ is a btime thing: means figure out the type of args before benchmarking
 # ; suppresses output - but actually doesn't.
+
+# Ryzen2 laptop 5700U (8-core): 20k * 30k test case:
+#Result with type Float32: 
+#targ-vec: 600000000 src-targ pairs, ans: -104982.625000 
+# 	 time 5.57 s 0.108 Gpair/s
+#devec: 600000000 src-targ pairs, ans: -104982.671875 
+# 	 time 1.46 s 0.411 Gpair/s
+#devec par: 600000000 src-targ pairs, ans: -104982.671875 
+# 	 time 0.207 s 2.9 Gpair/s
+#LV turbo: 600000000 src-targ pairs, ans: -104982.625000 
+# 	 time 0.0613 s 9.79 Gpair/s
+#LV tturbo: 600000000 src-targ pairs, ans: -104982.703125 
+# 	 time 0.0169 s 35.5 Gpair/s
+#Result with type Float64: 
+#targ-vec: 600000000 src-targ pairs, ans: 1265455.471453 
+# 	 time 7.66 s 0.0784 Gpair/s
+#devec: 600000000 src-targ pairs, ans: 1265455.471453 
+# 	 time 1.91 s 0.314 Gpair/s
+#devec par: 600000000 src-targ pairs, ans: 1265455.471453 
+# 	 time 0.264 s 2.27 Gpair/s
+#LV turbo: 600000000 src-targ pairs, ans: 1265455.471453 
+# 	 time 0.103 s 5.82 Gpair/s
+#LV tturbo: 600000000 src-targ pairs, ans: 1265455.471453 
+# 	 time 0.0652 s 9.21 Gpair/s
+
+# concl: tturbo wins big, esp at single-prec.
