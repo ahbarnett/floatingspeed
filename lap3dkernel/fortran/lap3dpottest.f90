@@ -3,6 +3,21 @@
 ! ntest>1 added 3/4/20
 ! ChatGPT5.2 via codex CLI, added variants using SIMD, 1/29/26.
 
+! build:
+! gcc -O3 -march=native -c rsqrtps.c -o rsqrtps.o
+! gfortran lap3dpottest.f90 rsqrtps.o -O3 -fopenmp -funroll-loops -march=native -o lap3d_compare_O3_rsqrt
+! ./lap3d_compare_O3_rsqrt
+
+! Ryzen 5700 U laptop (ross), all 16 threads (full HT) 1/29/26, reported
+! in codex:
+!  - orig: 2.3120 Gpair/s
+!  - accum: 5.9146 Gpair/s
+!  - accum+simd: 6.7645 Gpair/s
+!  - soa: 7.5631 Gpair/s             (SoA = struct of arrays)
+!  - soa+simd: 8.1021 Gpair/s
+!  - soa+rsqrt: 3.3898 Gpair/s
+
+
 program lap3dpottest
 
   !use omp_lib

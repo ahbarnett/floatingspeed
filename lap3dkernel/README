@@ -13,8 +13,8 @@ Bob Carpenter
 Manas Rachh
 Luiz Faria
 David Stein
+ChatGPT 5.2 via codex CLI
 
-July 2021
 
 To run all tests in linux (assumes you have all packages and compilers; you
 may need to change g++ to your version, g++-9, etc):
@@ -78,3 +78,13 @@ Notes: - The above results were run with 12 OMP threads; the performance with
             24 threads double full manual SIMD.jl  8.3  Gpair/sec
        - suggests it would be nice to have custom double rsqrt added to SIMD.jl
 
+
+-------------------------------------------------------------------------------
+Ryzen 5700 U (2021 laptop, 1.8GHz boost 4.3GHz, avx2, 8-core, use 8 threads):
+
+* C++ (GCC 11) + omp baseline:                     2.3  Gpair/sec
+   manual SIMD VCL vectorclass library + omp       8.1  Gpair/sec
+* fortran (GCC 11) + omp:                          2.3  Gpair/sec
+   optimized (struct-of-arrays, pragma simd, etc)  8.1  Gpair/sec
+
+... (to finish)
