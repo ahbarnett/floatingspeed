@@ -15,7 +15,8 @@
 !  - accum+simd: 6.7645 Gpair/s
 !  - soa: 7.5631 Gpair/s             (SoA = struct of arrays)
 !  - soa+simd: 8.1021 Gpair/s
-!  - soa+rsqrt: 3.3898 Gpair/s
+!  - soa+rsqrt: 3.3898 Gpair/s          (due to func call overhead?)
+!  - soa+rsqrb (block): 7.2522 Gpair/s   (still can't catch up with soa+simd)
 
 
 program lap3dpottest
@@ -36,6 +37,11 @@ program lap3dpottest
        real(c_float), dimension(4), intent(in) :: input
        real(c_double), dimension(4), intent(out) :: output
      end subroutine rsqrtps_nr4
+     subroutine rsqrtps_block1024(input, output) bind(C, name="rsqrtps_block1024")
+       use iso_c_binding, only: c_float, c_double
+       real(c_float), dimension(1024), intent(in) :: input
+       real(c_double), dimension(1024), intent(out) :: output
+     end subroutine rsqrtps_block1024
   end interface
 
   print *,'ns=',ns,'   nt=',nt
@@ -143,6 +149,22 @@ program lap3dpottest
   gpair = ns*nt/t/1.E9
   write(*,'(A12,1X,I12,1X,A,1X,F7.4,1X,A,1X,F7.4,1X,A)') &
        'soa+rsqrt:', ns*nt, 'pairs in', t, 's:', gpair, 'Gpair/s'
+
+  t0 =omp_get_wtime()
+  do i=1,ntest
+     call lap3dpot_soa_simd_rsqrtps_block(pot,y,q,x,ns,nt)
+  end do
+  t1 = omp_get_wtime()
+  t = (t1-t0)/ntest
+  tot = 0.D0
+  do i=1,nt
+     tot = tot + pot(i)
+  end do
+  print *,'soa+simd rsqrtps blk tot=',tot
+  print *,'soa+rsqrt blk diff=',tot-tot_ref,'rel=',(tot-tot_ref)/tot_ref
+  gpair = ns*nt/t/1.E9
+  write(*,'(A12,1X,I12,1X,A,1X,F7.4,1X,A,1X,F7.4,1X,A)') &
+       'soa+rsqrb:', ns*nt, 'pairs in', t, 's:', gpair, 'Gpair/s'
 
   deallocate(x)
   deallocate(y)
@@ -369,3 +391,63 @@ subroutine lap3dpot_soa_simd_rsqrtps(pot, y,q,x, ns,nt)
   !$omp end parallel
 
 end subroutine lap3dpot_soa_simd_rsqrtps
+
+! ----------------------------------------------------------------------
+subroutine lap3dpot_soa_simd_rsqrtps_block(pot, y,q,x, ns,nt)
+  ! SoA (struct-of-arrays) layout + rsqrtps in C over 1024-element blocks
+
+  use iso_c_binding, only: c_float, c_double
+  implicit none
+  integer, parameter :: block = 1024
+  integer ns, nt, i, j, k, jmax
+  real*8 :: x(3,nt), y(3,ns), q(ns), pot(nt)
+  real*8 :: xs(ns), ys(ns), zs(ns)
+  real*8 :: xt(nt), yt(nt), zt(nt)
+  real*8 :: prefac, r2ij
+  real*8 :: pi = 4*atan(1.D0)
+  real*8 :: accum
+  real(c_float) :: r2f(block)
+  real(c_double) :: rinvf(block)
+
+  interface
+     subroutine rsqrtps_block1024(input, output) bind(C, name="rsqrtps_block1024")
+       use iso_c_binding, only: c_float, c_double
+       real(c_float), dimension(1024), intent(in) :: input
+       real(c_double), dimension(1024), intent(out) :: output
+     end subroutine rsqrtps_block1024
+  end interface
+
+  prefac = 1.D0/(4*pi)
+  xs = y(1,:)
+  ys = y(2,:)
+  zs = y(3,:)
+  xt = x(1,:)
+  yt = x(2,:)
+  zt = x(3,:)
+  !$omp parallel
+  !$omp do private(i,j,k,jmax,accum,r2ij,r2f,rinvf)
+  do i=1,nt
+     accum = 0.0D0
+     jmax = ns - mod(ns,block)
+     do j=1,jmax,block
+        !$omp simd
+        do k=1,block
+           r2f(k) = real((xt(i)-xs(j+k-1))**2 + (yt(i)-ys(j+k-1))**2 + &
+                         (zt(i)-zs(j+k-1))**2, c_float)
+        end do
+        call rsqrtps_block1024(r2f, rinvf)
+        !$omp simd reduction(+:accum)
+        do k=1,block
+           accum = accum + prefac * q(j+k-1) * rinvf(k)
+        end do
+     end do
+     do j=jmax+1,ns
+        r2ij = (xt(i)-xs(j))**2 + (yt(i)-ys(j))**2 + (zt(i)-zs(j))**2
+        accum = accum + prefac * q(j) / sqrt(r2ij)
+     end do
+     pot(i) = accum
+  end do
+  !$omp end do
+  !$omp end parallel
+
+end subroutine lap3dpot_soa_simd_rsqrtps_block
